@@ -2,7 +2,7 @@ library(shiny)
 library(ggplot2)
 library(dplyr)
 suppressPackageStartupMessages(library(googleVis))
-x<-readRDS("nccos_chem_data_RIMA.rds")
+x<-readRDS("nccos_chem_data_rima.rds")
 
 pcnt_tot <- NULL
 tip <- NULL
@@ -10,17 +10,11 @@ tip <- NULL
 shinyServer(
         function(input, output) {
 observe({
-                cat(input$yr_id)
-                cat(input$parameter_id)
+                
             parm_unit <- reactive(paste("Parameter Level",x[x$Parameter==input$parameter_id & x$Fiscal.Year==input$yr_id,15]))  
 
             plot_title <- reactive(paste(input$yr_id, input$parameter_id, "Levels"))
-            
-#            z<- reactive(x[x$Parameter==input$parameter_id & x$Fiscal.Year==input$yr_id,c(3,4,5,8,9,10,13,14,15,17)])
-#            rec_cnt <- reactive(nrow(z))
-#cat(nrow(z))
-            
-                
+                                        
                 map_tbl <- reactive({
                         tmp <- x[x$Parameter==input$parameter_id & x$Fiscal.Year==input$yr_id,c(3,4,5,8,9,10,13,14,15,17)]
                         tip <- NULL
@@ -42,19 +36,13 @@ observe({
                   return(srch_tmp)     
                }
          })
-#                         
-#   cat("past if\n")          
-#   observe({  
+
              output$lineplot <- renderPlot(ggplot(data=search_res(), aes(x=Specific.Location, y=Value)) + 
                                                          geom_bar(stat="identity", width=.5, fill="blue") + 
                                                          xlab("Specific Location - ") + 
                                                          ylab(parm_unit())+ggtitle(plot_title())+
                                                          theme(plot.title = element_text(lineheight=.8, face="bold"), axis.text.x  = element_text(angle=90, vjust=0.5, size=16)))
 #   
-#   cat("inFucntion\n")
-#  
-#              output$lineplot <-renderGvis(gvisLineChart(x[x$Parameter==input$parameter_id & x$Fiscal.Year==input$yr_id,], xvar='Specific.Location', yvar = 'Value', options = list(width=200, height=200),))                           
-# cat("stating output\n")
 # 
                 if (nrow(search_res()) > 0) {
                         output$search_msg <- renderText(c("Your search returned ", nrow(search_res()), " records."))
@@ -62,16 +50,9 @@ observe({
   
                    output$table_id <-renderTable(search_res())
 #                     
-#observe({ 
-#                    map_data <-map_tbl()
                     output$mapplot <- renderGvis(gvisMap(map_tbl(), locationvar='locationvar', tipvar='tipvar'))
-cat("dims(map_tbl())")
+
 
         }) 
-#the end
+
 })
-#                  output$mapplot <- renderGvis(gvisMap(x[x$Parameter==input$parameter_id & x$Fiscal.Year==input$yr_id,c(3,4,5,9,11,13,14,15,17)], 'Loc', tipvar='Value'))
-#                 output$graph <- renderPlot(ggplot(data=ngperg, aes(x=Parameter, fill=Specific.Location)) + geom_bar())
-#                 #output$prediction <- renderPrint({diabetesRisk(input$glucose)})
-#                 # below is an experimental line chart in gvis
-#                 m <-gvisLineChart(x3[x3$Parameter==input$parameter_id,], xvar="Specific.Location", yvar = "Value", options = list(width=400, height=400),)
